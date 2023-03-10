@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 from flask_restful import Api, Resource
 from dotenv import load_dotenv
 from os import environ
+from marshmallow import post_load, fields, ValidationError
 
 load_dotenv()
 
@@ -52,7 +53,44 @@ game_schema = GameSchema()
 games_schema = GameSchema(many = True)
 
 # Resources
+class GameListResource():
+    def get(self):
+        all_games = Game.query.all()
+        return games_schema.dump(all_games), 200
+    
+    def post(self):
+        form_data = request.get_json()
+        try:
+            new_game = game_schema.load(form_data)
+            db.session.add(new_game)
+            db.session.commit()
+            return game_schema.dump(new_game), 201
+        except ValidationError as err:
+            return err.messages, 400
 
-
-
+class GameResource(Resource):
+    def get(self, game_id):
+        game_from_db = Game.query.get_or_404(game_id)
+        return game_schema.dump(game_from_db)
+    
+    def delete(self, game_id):
+        game_from_db = Game.query.get_orr_404(game_id)
+        db.session.delete(game_from_db)
+        return "", 204
+    
+    def put(self, game_id):
+        game_from_db = Game.query.get_or_404(game_id)
+        if 'name' in request.json:
+            game_from_db.name = request.json['name']
+        if 'description' in request.json:
+            game_from_db.description = request.json['description']
+        if 'price' in request.json:
+            game_from_db.price = request.json['price']
+        if 'inventory_quantity' in request.json:
+            game_from_db.inventory_quantity in request.json
+        db.session.commit()
+        return game_schema.dump(game_from_db)
+    
 # Routes
+api.add_resource(GameListResource, '/api/games')
+api.add_resource(GameResource, '/api/games/<int:game_id>')
