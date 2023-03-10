@@ -33,10 +33,23 @@ class Game(db.Model):
     def __repr__(self):
         return f'{self.name} {self.description} {self.price} {self.inventory_quantity}'
 
-
 # Schemas
+class GameSchema(ma.Schema):
+    id = fields.Integer(primary_key = True)
+    name = fields.String(required = True)
+    description = fields.String(required = True)
+    price = fields.Float(required = True)
+    inventory_quantity = fields.Integer()
 
+    class Meta:
+        fields = ("id", "name", "description", "price", "inventory_quantity")
 
+    @post_load
+    def create_game(self, data, **kwargs):
+        return Game(**data)
+    
+game_schema = GameSchema()
+games_schema = GameSchema(many = True)
 
 # Resources
 
