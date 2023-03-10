@@ -92,5 +92,5 @@ class GameResource(Resource):
         return game_schema.dump(game_from_db)
     
 # Routes
-api.add_resource(GameListResource, '/api/games')
-api.add_resource(GameResource, '/api/games/<int:game_id>')
+api.add_resource(GameListResource, '/api/products')
+api.add_resource(GameResource, '/api/products/<int:game_id>')
